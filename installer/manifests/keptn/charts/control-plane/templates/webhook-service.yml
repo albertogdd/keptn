@@ -1,0 +1,90 @@
+{{- if .Values.webhookService.enabled }}
+# webhook-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webhook-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+spec:
+  selector:
+    matchLabels: {{- include "common.labels.selectorLabels" . | nindent 6 }}
+  replicas: 1
+  {{- include "control-plane.common.update-strategy" . | nindent 2 }}
+  template:
+    metadata:
+      labels: {{- include "common.labels.standard" . | nindent 8 }}
+        app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+        app.kubernetes.io/component: {{ include "control-plane.name" . }}
+    spec:
+      {{- include "control-plane.common.pod-security-context" . | nindent 6 }}
+      serviceAccountName: keptn-webhook-service
+      containers:
+        - name: webhook-service
+          image: {{ .Values.webhookService.image.repository }}:{{ .Values.webhookService.image.tag | default .Chart.AppVersion }}
+          {{- $prestop := .Values.webhookService.preStopHookTime | default 90 | quote -}}
+          {{- include "control-plane.prestop" $prestop | nindent 10 }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "100m"
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_LEVEL
+              value: {{ .Values.logLevel | default "info" }}
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
+        - name: distributor
+          image: {{ .Values.distributor.image.repository }}:{{ .Values.distributor.image.tag | default .Chart.AppVersion }}
+          {{- include "control-plane.dist.livenessProbe" . | nindent 10 }}
+          {{- include "control-plane.dist.readinessProbe" . | nindent 10 }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          {{- include "keptn.distributor.resources" . | nindent 10 }}
+          env:
+            - name: PUBSUB_TOPIC
+              value: ''
+            - name: PUBSUB_RECIPIENT
+              value: '127.0.0.1'
+            - name: PUBSUB_RECIPIENT_PATH
+              value: '/v1/event'
+          {{- include "control-plane.dist.common.env.vars" . | nindent 12 }}
+          {{- include "control-plane.common.container-security-context" . | nindent 10 }}
+      terminationGracePeriodSeconds: {{ .Values.webhookService.gracePeriod | default 120 }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values.common.nodeSelector "indent" 6 "context" . )}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-service
+  labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
+{{- end }}

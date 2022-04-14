@@ -1,4 +1,6 @@
 .DS_Store
 # ignore generated files
 manifests/keptn/charts/control-plane/Chart.lock
-manifests/keptn/charts/control-plane/charts/nats-*.tgz
+manifests/keptn/charts/control-plane/charts/*.tgz
+manifests/keptn/charts/continuous-delivery/Chart.lock
+manifests/keptn/charts/continuous-delivery/charts/*.tgz

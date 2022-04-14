@@ -1,13 +1,13 @@
-{{- if .Values.jmeterservice.service.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "jmeter-service.fullname" . }}
+  name: bridge
   labels: {{- include "common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/part-of: keptn-{{ .Release.Namespace }}
+    app.kubernetes.io/component: {{ include "control-plane.name" . }}
 spec:
-  type: ClusterIP
   ports:
     - port: 8080
+      targetPort: 3000
       protocol: TCP
   selector: {{- include "common.labels.selectorLabels" . | nindent 4 }}
-  {{- end }}

@@ -1,3 +1,5 @@
+#TODO: define nameOverride for all services
+
 mongo:
   enabled: true
   host: mongodb:27017
@@ -11,9 +13,9 @@ mongo:
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
     usernames:
       - 'keptn'
-    password: null
+    password:
     rootUser: 'admin'
-    rootPassword: null
+    rootPassword:
     bridgeAuthDatabase: 'keptn'
   external:
     connectionString:
@@ -101,16 +103,16 @@ bridge:
   image:
     repository: docker.io/keptn/bridge2
     tag: ""
-  cliDownloadLink: null
-  integrationsPageLink: null
+  cliDownloadLink:
+  integrationsPageLink:
   secret:
     enabled: true
   versionCheck:
     enabled: true
   showApiToken:
     enabled: true
-  installationType: null
-  lookAndFeelUrl: null
+  installationType:
+  lookAndFeelUrl:
   podSecurityContext:
     enabled: true
     defaultSeccompProfile: true
@@ -188,7 +190,7 @@ configurationService:
     tag: ""
   # storage and storageClass are the settings for the PVC used by the configuration-storage
   storage: 100Mi
-  storageClass: null
+  storageClass:
   fsGroup: 1001
   initContainer: true
   env:
@@ -265,21 +267,20 @@ ingress:
 
 logLevel: "info"
 
-common:
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
-  podSecurityContext:
-    enabled: true
-    defaultSeccompProfile: true
-    fsGroup: 65532
-  containerSecurityContext:
-    enabled: true
-    runAsNonRoot: true
-    runAsUser: 65532
-    readOnlyRootFilesystem: true
-    allowPrivilegeEscalation: false
-    privileged: false
-  nodeSelector: {}
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+podSecurityContext:
+  enabled: true
+  defaultSeccompProfile: true
+  fsGroup: 65532
+containerSecurityContext:
+  enabled: true
+  runAsNonRoot: true
+  runAsUser: 65532
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  privileged: false
+nodeSelector: {}

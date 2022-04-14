@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "control-plane.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- include "common.names.name" . -}}
 {{- end }}
 
 {{/*
@@ -12,46 +12,14 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "control-plane.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-{{- end }}
+{{- include "common.names.fullname" . -}}
 {{- end }}
 
 {{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "control-plane.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Common labels
-*/}}
-{{- define "control-plane.labels" -}}
-helm.sh/chart: {{ include "control-plane.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
-app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- end }}
-
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "control-plane.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "control-plane.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
+{{- include "common.names.chart" . -}}
 {{- end }}
 
 {{- define "control-plane.dist.livenessProbe" -}}
@@ -226,13 +194,13 @@ securityContext:
 {{- end -}}
 
 {{- define "control-plane.common.pod-security-context" -}}
-{{- if (.Values.common).podSecurityContext -}}
-{{- if .Values.common.podSecurityContext.enabled -}}
+{{- if .Values.podSecurityContext -}}
+{{- if .Values.podSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.podSecurityContext "enabled" "defaultSeccompProfile" }}
+{{- range $key, $value := omit .Values.podSecurityContext "enabled" "defaultSeccompProfile" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
-{{- if not .Values.common.podSecurityContext.seccompProfile -}}
+{{- if not .Values.podSecurityContext.seccompProfile -}}
 {{- if .Values.apiGatewayNginx.podSecurityContext.defaultSeccompProfile -}}
 {{- include "control-plane.common.security-context-seccomp" . -}}
 {{- end -}}
@@ -246,10 +214,10 @@ securityContext:
 {{- end -}}
 
 {{- define "control-plane.common.container-security-context" -}}
-{{- if (.Values.common).containerSecurityContext -}}
-{{- if .Values.common.containerSecurityContext.enabled -}}
+{{- if (.Values).containerSecurityContext -}}
+{{- if .Values.containerSecurityContext.enabled -}}
 securityContext:
-{{- range $key, $value := omit .Values.common.containerSecurityContext "enabled" }}
+{{- range $key, $value := omit .Values.containerSecurityContext "enabled" }}
   {{ $key }}: {{- toYaml $value | nindent 4 }}
 {{- end -}}
 {{- end -}}
@@ -278,5 +246,3 @@ strategy:
     maxUnavailable: 0
 {{- end -}}
 {{- end -}}
-
-
