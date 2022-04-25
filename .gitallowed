@@ -1,4 +1,0 @@
-bridge/cypress/fixtures/files/certificate.pem
-bridge/cypress/fixtures/files/certificate-invalid.pem
-bridge/cypress/fixtures/files/ssh-private-key.pem
-bridge/cypress/fixtures/files/ssh-private-key-invalid.pem
