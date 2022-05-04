@@ -81,12 +81,7 @@ readinessProbe:
 
 {{- define "keptn.distributor.resources" -}}
 resources:
-  requests:
-    memory: "16Mi"
-    cpu: "25m"
-  limits:
-    memory: "32Mi"
-    cpu: "100m"
+  {{- toYaml .Values.distributor.resources | nindent 2 }}
 {{- end }}
 
 {{/*
